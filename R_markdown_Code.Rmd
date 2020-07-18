@@ -1,0 +1,102 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## Objective
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). 
+
+They are particularly interested in the following two questions:
+
+- “Is an automatic or manual transmission better for MPG”
+- "Quantify the MPG difference between automatic and manual transmissions"
+
+```{r cars}
+library(tidyr)
+library(ggplot2)
+
+#load dataset
+data(mtcars)
+
+# overview mtcars
+head(mtcars)
+```
+
+## EDA phase
+
+We will focus on transmission relationship with other variables
+
+```{r}
+# check direct relation between mpg and transmission type, ignoring other factors
+mtcars %>%
+  ggplot(aes(am,mpg))+
+  geom_point(aes(colour = factor(am)),na.rm = TRUE)+
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("transmission-Mpg direct relation (0=automatic, 1=Manual)")
+
+# select couple of variables and check relationship
+# check relation between mpg and cyl, split by transmission type
+mtcars %>%
+  ggplot(aes(cyl,mpg))+
+  geom_point(aes(colour = factor(cyl)),na.rm = TRUE)+
+  facet_grid(cols = vars(as.factor(am)))+
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Cyl-Mpg relation split by transmission type (0=automatic, 1=Manual)")
+
+# check relation between mpg and wt, split by transmission type
+mtcars %>%
+  ggplot(aes(wt,mpg))+
+  geom_point(aes(colour = factor(wt)),na.rm = TRUE)+
+  facet_grid(cols = vars(as.factor(am)))+
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("Weight-Mpg relation split by transmission type (0=automatic, 1=Manual)")
+
+# check relation between mpg and vs, split by transmission type
+mtcars %>%
+  ggplot(aes(vs,mpg))+
+  geom_point(aes(colour = factor(vs)),na.rm = TRUE)+
+  facet_grid(cols = vars(as.factor(am)))+
+  geom_smooth(method = "lm", se = FALSE) +
+  ggtitle("VS-Mpg relation split by transmission type (0=automatic, 1=Manual)")
+
+```
+
+## explore linear models phase
+
+``` {r}
+# fit1 is simple, will be only between mpg and transmission
+fit1 <- lm(mpg~am-1 , data = mtcars)
+summary(fit1)$coefficients
+
+
+# fit2 is multi-model between mpg & all variables 
+fit2 <- glm(mpg~. , data = mtcars)
+summary(fit2)$coefficients
+# plot model
+par(mfrow = c(2, 2))
+plot(fit2)
+
+# will add one variable at a time to mpg and transmission
+fit3 <- lm(mpg~cyl+am , data = mtcars)
+summary(fit3)$coefficients
+# plot model
+par(mfrow = c(2, 2))
+plot(fit3)
+
+fit4 <- lm(mpg~wt+am , data = mtcars)
+summary(fit4)$coefficients
+# plot model
+par(mfrow = c(2, 2))
+plot(fit4)
+
+fit5 <- lm(mpg~vs+am , data = mtcars)
+summary(fit5)$coefficients
+# plot model
+par(mfrow = c(2, 2))
+plot(fit5)
+```
+
+## Summary
+
+- Automatic Transmission has better impact on mpg
+- Residuals show that considering other variables in the process of fitting a model is much better than considering only mpg & am
